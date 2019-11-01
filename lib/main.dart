@@ -64,7 +64,7 @@ class BallonSlider_State extends State<BallonSlider> {
   String valueText = "0";
 
   double handleBorderSize = 3;
-  double handleBorderNormalSize =3;
+  double handleBorderNormalSize = 3;
   double animHandleBorderNormalDistSize = -1;
 
   double handleSize = 4;
@@ -93,6 +93,9 @@ class BallonSlider_State extends State<BallonSlider> {
 
   double angle = 0;
   double goalAngle = 0;
+
+  double xOffset = 0;
+
   Timer angleTimer;
   double width = 300;
   double height = 50;
@@ -152,9 +155,9 @@ class BallonSlider_State extends State<BallonSlider> {
               bool requiresSetState = false;
 
               if (goalAngle > 0) {
-                goalAngle -= 2;
+                goalAngle -= 1.5;
               } else if (goalAngle < 0) {
-                goalAngle += 2;
+                goalAngle += 1.5;
               }
 
               if (now - lastAngleUpdateTime > 16) {
@@ -175,6 +178,10 @@ class BallonSlider_State extends State<BallonSlider> {
                 }
                 requiresSetState = true;
               }
+
+              if (goalAngle > -2 && goalAngle < 2) goalAngle = 0;
+
+              xOffset = goalAngle / 2;
 
               if (now - lastAngleUpdateTime >= 16) {
                 if ((angle - goalAngle).abs() > 2) angle = goalAngle;
@@ -238,8 +245,7 @@ class BallonSlider_State extends State<BallonSlider> {
               }
 
               if (isHandleUnderPress == false &&
-                  goalAngle >= -2 &&
-                  goalAngle <= 2 &&
+                  goalAngle != 0 &&
                   handleAnimCurrentProgress == 0 &&
                   ballonAnimCurrentProgress == 0) {
                 if (angleTimer.isActive) angleTimer.cancel();
@@ -285,6 +291,7 @@ class BallonSlider_State extends State<BallonSlider> {
           text: valueText,
           textSize: valueTextSize,
           handleBorderSize: handleBorderSize,
+          xOffset: xOffset,
         ),
       ),
     );
@@ -301,6 +308,7 @@ class BallonSliderPainter extends CustomPainter {
   final double sliderHeight;
   final double textSize;
   final String text;
+  final double xOffset;
 
   Paint backgroundPaint = Paint()
     ..color = Colors.black12
@@ -315,21 +323,21 @@ class BallonSliderPainter extends CustomPainter {
     ..isAntiAlias = true;
   Paint handleBorderPaint;
 
-
-
   TextPainter ballonPainter;
   TextPainter valuePainter;
 
-  BallonSliderPainter(
-      {this.sliderHeight,
-      this.handleX,
-      this.handleY,
-      this.handleSize,
-      this.ballonSize,
-      this.ballonAngle,
-      this.textSize,
-      this.text,
-      this.handleBorderSize}) {
+  BallonSliderPainter({
+    this.sliderHeight,
+    this.handleX,
+    this.handleY,
+    this.handleSize,
+    this.ballonSize,
+    this.ballonAngle,
+    this.textSize,
+    this.text,
+    this.handleBorderSize,
+    this.xOffset,
+  }) {
     backgroundPaint.strokeWidth = sliderHeight;
     foregroundPaint.strokeWidth = sliderHeight;
 
@@ -404,7 +412,7 @@ class BallonSliderPainter extends CustomPainter {
     var ballonH = ballonPainter.height;
     var ballonW = ballonPainter.width;
 
-    canvas.translate(handleX, handleY-(handleSize/2));
+    canvas.translate(handleX + xOffset, handleY - (handleSize / 2));
 
     canvas.rotate(degToRad(ballonAngle));
     canvas.translate(-(ballonW / 2), -(ballonH + handleSize));
